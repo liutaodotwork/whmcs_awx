@@ -1,0 +1,45 @@
+.DS_Store
+
+accounts.php
+.well-known/
+node_modules/
+dist
+webroot/docs/build
+
+# Testing reports
+webroot/_tr/
+
+tests/_ci_phpunit_test/tmp/cache/
+tests/.phpunit.result.cache
+
+tags
+!cart/views/team/tags
+
+vendor
+!webroot/themes/mvp/src/vendor
+
+composer.lock
+package-lock.json
+
+sys/libraries/Htmlpurifier/standalone/HTMLPurifier/DefinitionCache/
+
+# IDE Files
+#-------------------------
+/nbproject/
+.idea/*
+.buildpath
+.project
+.settings/
+
+## Sublime Text cache files
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
+## vi swp files
+*.swp
+
+composer.lock
+.temp

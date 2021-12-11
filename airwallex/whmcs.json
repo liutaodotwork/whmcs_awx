@@ -1,0 +1,20 @@
+{
+  "schema": "1.0",
+  "type": "whmcs-gateways",
+  "name": "airwallex",
+  "license": "proprietary",
+  "category": "payments",
+  "description": {
+    "name": "Airwallex",
+    "tagline": "A business account, built for the modern business."
+  },
+  "support": {
+    "docs_url": "https:\/\/www.airwallex.com\/"
+  },
+  "authors": [
+    {
+      "name": "Airwallex",
+      "homepage": "https:\/\/www.airwallex.com\/"
+    }
+  ]
+}
