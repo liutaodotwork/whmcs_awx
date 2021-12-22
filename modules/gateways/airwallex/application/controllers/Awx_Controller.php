@@ -14,21 +14,11 @@ class Awx_Controller extends CI_Controller
     // --------------------------------------------------------------------
 
     /**
-     * AWX Doamin in Demo
+     * Test mode 
      *
      * @access public
      */
-    protected $awx_domain = 'https://pci-api-demo.airwallex.com';
-
-
-    // --------------------------------------------------------------------
-
-    /**
-     * AWX Doamin in Live
-     *
-     * @access public
-     */
-    protected $awx_live_domain = 'https://pci-api.airwallex.com';
+    protected $test_mode = 'off';
 
     // --------------------------------------------------------------------
 
@@ -173,7 +163,7 @@ class Awx_Controller extends CI_Controller
         $client = new \GuzzleHttp\Client();
         try
         {
-             $response = $client->request( 'POST', $this->awx_domain . '/api/v1/authentication/login', [
+             $response = $client->request( 'POST', $this->get_domain() . '/api/v1/authentication/login', [
                 'headers' => [
                     'x-api-key'     => $api_key,
                     'x-client-id'   => $client_id
@@ -204,7 +194,7 @@ class Awx_Controller extends CI_Controller
         $client = new \GuzzleHttp\Client();
         try
         {
-            $response = $client->request( 'POST', $this->awx_domain . '/api/v1/pa/payment_intents/create', [
+            $response = $client->request( 'POST', $this->get_domain() . '/api/v1/pa/payment_intents/create', [
                 'headers' => [
                     'Content-Type'  => 'application/json',
                     'Authorization' => 'Bearer ' . $token
@@ -236,7 +226,7 @@ class Awx_Controller extends CI_Controller
 
         try
         {
-            $response = $client->request( 'POST', $this->awx_domain . '/api/v1/pa/payment_intents/' . $intent_id . '/confirm', [
+            $response = $client->request( 'POST', $this->get_domain() . '/api/v1/pa/payment_intents/' . $intent_id . '/confirm', [
                 'headers' => [
                     'Content-Type'  => 'application/json',
                     'Authorization' => 'Bearer ' . $token
@@ -275,7 +265,37 @@ class Awx_Controller extends CI_Controller
         $client = new \GuzzleHttp\Client();
         try
         {
-            $response = $client->request( 'GET', $this->awx_domain . '/api/v1/pa/payment_intents/' . $intent_id, [
+            $response = $client->request( 'GET', $this->get_domain() . '/api/v1/pa/payment_intents/' . $intent_id, [
+                'headers' => [
+                    'Content-Type'  => 'application/json',
+                    'Authorization' => 'Bearer ' . $token
+                ]
+            ] );
+
+            if ( '200' != $response->getStatusCode() )
+            {
+                return FALSE;
+            }
+
+            return json_decode( $response->getBody(), TRUE );
+        } 
+        catch (\Throwable $th)
+        {
+            return FALSE;
+        }
+    }
+
+    // --------------------------------------------------------------------
+
+    /**
+     * Get customer.
+     */
+    protected function get_payment_method( $token = '', $id = '' )
+    {
+        $client = new \GuzzleHttp\Client();
+        try
+        {
+            $response = $client->request( 'GET', $this->get_domain() . '/api/v1/pa/payment_methods/' . $id, [
                 'headers' => [
                     'Content-Type'  => 'application/json',
                     'Authorization' => 'Bearer ' . $token
@@ -305,7 +325,7 @@ class Awx_Controller extends CI_Controller
         $client = new \GuzzleHttp\Client();
         try
         {
-            $response = $client->request( 'GET', $this->awx_domain . '/api/v1/pa/customers/' . $customer_id, [
+            $response = $client->request( 'GET', $this->get_domain() . '/api/v1/pa/customers?merchant_customer_id=' . $customer_id, [
                 'headers' => [
                     'Content-Type'  => 'application/json',
                     'Authorization' => 'Bearer ' . $token
@@ -358,7 +378,7 @@ class Awx_Controller extends CI_Controller
         $client = new \GuzzleHttp\Client();
         try
         {
-            $response = $client->request( 'GET', $this->awx_domain . '/api/v1/pa/customers/' . $customer_id . '/generate_client_secret', [
+            $response = $client->request( 'GET', $this->get_domain() . '/api/v1/pa/customers/' . $customer_id . '/generate_client_secret', [
                 'headers' => [
                     'Content-Type'  => 'application/json',
                     'Authorization' => 'Bearer ' . $token
@@ -389,7 +409,7 @@ class Awx_Controller extends CI_Controller
 
         try
         {
-            $response = $client->request( 'POST', $this->awx_domain . '/api/v1/pa/payment_intents/' . $intent_id . '/confirm_continue', [
+            $response = $client->request( 'POST', $this->get_domain() . '/api/v1/pa/payment_intents/' . $intent_id . '/confirm_continue', [
                 'headers' => [
                     'Content-Type'  => 'application/json',
                     'Authorization' => 'Bearer ' . $token
@@ -428,7 +448,7 @@ class Awx_Controller extends CI_Controller
         $client = new \GuzzleHttp\Client();
         try
         {
-            $response = $client->request( 'POST', $this->awx_domain . '/api/v1/pa/customers/create', [
+            $response = $client->request( 'POST', $this->get_domain() . '/api/v1/pa/customers/create', [
                 'headers' => [
                     'Content-Type'  => 'application/json',
                     'Authorization' => 'Bearer ' . $token
@@ -467,6 +487,33 @@ class Awx_Controller extends CI_Controller
         }
 
         echo json_encode( $json_arr );
+    }
+
+    // --------------------------------------------------------------------
+
+    /**
+     * Json response
+     *
+     * @access protected
+     */
+    protected function get_domain()
+    {
+        return ( $this->test_mode == 'on' ) ? 'https://pci-api-demo.airwallex.com' : 'https://pci-api.airwallex.com';
+    }
+
+    // --------------------------------------------------------------------
+
+    /**
+     * Json response
+     *
+     * @access protected
+     */
+    protected function set_test_mode( $test_mode = '' )
+    {
+        if ( $test_mode == 'on' )
+        {
+            $this->test_mode = 'on';
+        }
     }
 
 }

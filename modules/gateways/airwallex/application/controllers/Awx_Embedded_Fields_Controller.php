@@ -20,10 +20,116 @@ class Awx_Embedded_Fields_Controller extends Awx_Controller
     // --------------------------------------------------------------------
 
     /**
-     * Checkout Page.
+     * Get payment method.
      */
-    public function index()
+    public function get_paymentmethod()
     {
+        $client_id          = $this->input->post( 'client_id', TRUE );
+        $api_key            = $this->input->post( 'api_key', TRUE );
+        $payment_method_id  = $this->input->post( 'paymentmethod_id', TRUE );
+        $test_mode          = $this->input->post( 'test_mode', TRUE );
+
+        $this->set_test_mode( $test_mode );
+
+        // Token
+        $token = $this->get_api_token( $client_id, $api_key );
+
+        if ( FALSE === $token )
+        {
+            exit();
+        }
+
+        $this->json_response( [
+            'payment_method' => $this->get_payment_method( $token, $payment_method_id )
+        ] );
+
+        return TRUE;
+    }
+
+    // --------------------------------------------------------------------
+
+    /**
+     * Get intent.
+     */
+    public function get_intent()
+    {
+        $client_id      = $this->input->post( 'client_id', TRUE );
+        $api_key        = $this->input->post( 'api_key', TRUE );
+        $test_mode      = $this->input->post( 'test_mode', TRUE );
+
+        $this->set_test_mode( $test_mode );
+
+        // Token
+        $token = $this->get_api_token( $client_id, $api_key );
+
+        if ( FALSE === $token )
+        {
+            exit();
+        }
+
+        // Params
+        $params[ 'action' ]         = $this->input->post( 'action', TRUE );
+        $params[ 'product_id' ]     = $this->input->post( 'product_id', TRUE );
+        $params[ 'product_name' ]   = $this->input->post( 'product_name', TRUE );
+        $params[ 'amount' ]         = $this->input->post( 'amount', TRUE );
+        $params[ 'currency' ]       = $this->input->post( 'currency', TRUE );
+        $params[ 'customer_id' ]    = $this->input->post( 'customer_id', TRUE );
+        $params[ 'test_mode' ]      = $this->input->post( 'test_mode', TRUE );
+
+        $params[ 'invoice_id' ]         = $this->input->post( 'invoice_id', TRUE );
+        $params[ 'card_type' ]          = '';
+        $params[ 'card_last_four' ]     = '';
+        $params[ 'card_token' ]         = '';
+        $params[ 'card_expiry_date' ]   = '1223';
+
+        $params[ 'fees' ]       = $this->input->post( 'fees', TRUE );
+        $params[ 'transaction_id' ] = $this->input->post( 'transaction_id', TRUE );
+
+        // Create intent
+        $order = [
+            'request_id'        => random_string(),
+            'amount'            => $params[ 'amount' ],
+            'currency'          => strtoupper( $params[ 'currency' ] ),
+            'merchant_order_id' => $params[ 'invoice_id' ],
+            'order'             => [
+                'products' => [
+                    [
+                        'code' => $params[ 'product_id' ],
+                        'sku'  => $params[ 'product_id' ],
+                        'name' => $params[ 'product_name' ],
+                        'desc' => '',
+                        'quantity' => 1,
+                        'unit_price' => $params[ 'amount' ],
+                        'type' => 'subscription'
+                    ]
+                ],
+                'type' => 'digital_goods'
+            ]
+        ];
+
+        $customer = $this->get_customer( $token, $params[ 'customer_id' ] );
+
+        if ( ! isset( $customer[ 'items' ][ 0 ] )  )
+        {
+            $customer = $this->create_customer( $token, [
+                'request_id'            => random_string(),
+                'merchant_customer_id'  => $params[ 'customer_id' ],
+            ] );
+        }
+        else
+        {
+            $customer = $customer[ 'items' ][ 0 ];
+        }
+
+        $order[ 'customer_id' ] = $customer[ 'id' ];
+    
+        $this->json_response( [
+            'intent' => $this->get_secret( $token, $order ),
+            'params' => $params,
+            'customer_awx_id' => $customer[ 'id' ]
+        ] );
+
+        return TRUE;
     }
 
     // --------------------------------------------------------------------
@@ -33,101 +139,32 @@ class Awx_Embedded_Fields_Controller extends Awx_Controller
      */
     public function embedded_fields()
     {
-        $client_id      = $this->input->post( 'client_id', TRUE );
-        $api_key        = $this->input->post( 'api_key', TRUE );
-        $customer_id    = $this->input->post( 'customer_id', TRUE );
-
-
-        $token = $this->get_api_token( $client_id, $api_key );
-
-        if ( FALSE === $token )
+        $action       =  $this->input->post( 'followup', TRUE );
+        if ( $action != 'payment' )
         {
-            exit();
+            exit( 'Add new card with this payment method is not supported currently.' );
         }
 
-        // Params
-        $params[ 'action' ] = 'payment';//$this->input->post( 'action', TRUE );
-        $params[ 'amount' ] = '12.00';//$this->input->post( 'amount', TRUE );
-        $params[ 'currency' ] = 'USD';//$this->input->post( 'currency', TRUE );
-
-        $params[ 'invoice_id' ] = $this->input->post( 'invoice_id', TRUE );
-        $params[ 'card_type' ] = 'Visa';
-        $params[ 'card_last_four' ] = '';
-        $params[ 'card_token' ] = '';
-        $params[ 'card_expiry_date' ] = '1223';
-
-        $params[ 'fees' ] = $this->input->post( 'fees', TRUE );
-        $params[ 'success' ] = TRUE;//$this->input->post( 'fees', TRUE );
-        $params[ 'transaction_id' ] = $this->input->post( 'transaction_id', TRUE );
-
-        $params[ 'customer_id' ] = $this->input->post( 'customer_id', TRUE );
-
-        $this->vars[ 'params' ] = $params;
-
-
-        // Create intent
-        $order = [
-            'request_id'        => random_string(),
-            'amount'            => '12.00',
-            'currency'          => 'USD',
-            'merchant_order_id' => random_string( 'alnum', 32 ),
-            'order' => [
-                'products' => [
-                    [
-                    'code' => random_string(),
-                    'sku'  => random_string(),
-                    'name' => 'iPhone XR',
-                    'desc' => '64 GB White',
-                    'quantity' => 1,
-                    'unit_price' => 850,
-                    'type' => 'physical'
-                    ],
-                    [
-                    'code' => random_string(),
-                    'sku'  => random_string(),
-                    'name' => 'Shipping',
-                    'desc' => 'Ship to the US',
-                    'quantity' => 1,
-                    'unit_price' => 10,
-                    'type' => 'shipping'
-                    ],
-                ],
-                'shipping' => [
-                    'first_name' => 'Steve',
-                    'last_name'  => 'Gates',
-                    'phone_number' => '+187631283',
-                    'shipping_method' => 'DEFINED by YOUR WEBSITE',
-                    'address' => [
-                        'country_code' => "US",
-                        'state' => "AK",
-                        'city' => "Akhiok",
-                        'street' => "Street No. 4",
-                        'postcode' => "99654"
-                    ]
-                ]
-            ]
+        $this->vars[ 'intent_id' ]      = $this->input->post( 'intent_id', TRUE );
+        $this->vars[ 'client_secret' ]  = $this->input->post( 'client_secret', TRUE );
+        $this->vars[ 'params' ]         = [
+            'action'            =>  $this->input->post( 'followup', TRUE ),
+            'product_id'        =>  $this->input->post( 'product_id', TRUE ),
+            'description'       =>  $this->input->post( 'description', TRUE ),
+            'product_name'      =>  $this->input->post( 'product_name', TRUE ),
+            'amount'            =>  $this->input->post( 'amount', TRUE ),   
+            'currency'          =>  $this->input->post( 'currency', TRUE ), 
+            'customer_id'       =>  $this->input->post( 'customer_id', TRUE ),
+            'customer_awx_id'   =>  $this->input->post( 'customer_awx_id', TRUE ),
+            'test_mode'         =>  $this->input->post( 'test_mode', TRUE ), 
+            'invoice_id'        =>  $this->input->post( 'invoice_id', TRUE ), 
+            'card_token'        =>  '',
+            'paymentmethod_id'  =>  '',
+            'transaction_id'    =>  '',
         ];
 
-        // TODO
-        $awx_customer_id = 'cus_hkdmr5b88g4rwhlqbwj';
-        $order[ 'customer_id' ] = $awx_customer_id;
-        // if ( $customer = $this->get_customer( $token, $customer_id ) )
-        // {
-        //     $customer = $this->create_customer( $token, [
-        //         'request_id' => random_string(),
-        //         'merchant_customer_id' => $customer_id,
-        //         'first_name' => 'Steve',
-        //         'last_name' => 'Gates',
-        //     ] );
-
-
-        //     $order[ 'customer_id' ] = $customer[ 'id' ];
-        // }
-
-    
-        $this->vars[ 'intent' ]     = $this->get_secret( $token, $order );
-        $this->vars[ 'customer_id' ]   = $awx_customer_id;
-
+        $this->vars[ 'customer_awx_id' ]    = $this->input->post( 'customer_awx_id', TRUE );
+        $this->vars[ 'return_url' ]         = $this->input->post( 'return_url', TRUE );
 
         $this->load->view( 'embedded_fields_checkout', $this->vars );
     }
@@ -314,6 +351,10 @@ class Awx_Embedded_Fields_Controller extends Awx_Controller
         // 1. Get an access token
         $client_id  = $this->input->post( 'client_id', TRUE );
         $api_key    = $this->input->post( 'api_key', TRUE );
+        $test_mode  = $this->input->post( 'test_mode', TRUE );
+
+        $this->set_test_mode( $test_mode );
+
         $token      = $this->get_api_token( $client_id, $api_key );
 
         $consent_id     = $this->input->post( 'consent_id', TRUE );
@@ -343,83 +384,4 @@ class Awx_Embedded_Fields_Controller extends Awx_Controller
         $this->json_response( $this->charge_fees( $token, $intent, $consent ));
     }
 
-    // --------------------------------------------------------------------
-
-    /**
-     * Checkout Page.
-     */
-    public function direct_api()
-    {
-        $this->vars[ 'client_id' ]  = $this->input->get( 'c', TRUE );
-        $this->vars[ 'api_key' ]    = $this->input->get( 'k', TRUE );
-
-        $this->load->view( 'direct_api_checkout', $this->vars );
-    }
-
-    // --------------------------------------------------------------------
-
-    /**
-     * Success Result.
-     */
-    public function success()
-    {
-        $client_id = $this->input->get( 'c', TRUE );
-        $api_key = $this->input->get( 'k', TRUE );
-        $intent_id = $this->input->get( 'id', TRUE );
-        if ( empty( $intent_id ) OR  empty( $client_id ) OR empty( $api_key )  )
-        {
-            show_404();
-        }
-
-        $token = $this->get_api_token( $client_id, $api_key );
-
-        if ( FALSE === $token )
-        {
-            show_404();
-        }
-
-        $intent = $this->get_payment_intent( $token, $intent_id );
-
-        if ( FALSE === $intent )
-        {
-            show_404();
-        }
-
-        $this->vars[ 'intent' ] = $intent;
-        $this->vars[ 'back_url' ] = '/embedded-fields-for-card-payments?c=' . $client_id . '&k=' . $api_key;
-
-        $this->load->view( 'success', $this->vars );
-    }
-
-    // --------------------------------------------------------------------
-
-    /**
-     * Failure Result.
-     */
-    public function failure()
-    {
-        $this->load->view( 'failure', $this->vars );
-    }
-
-    // --------------------------------------------------------------------
-
-    /**
-     * 3DS Result.
-     */
-    public function three_ds_result( $res = 1 )
-    {
-        $res =  ! in_array( $res, [ 1, 0 ] ) ? 1 : $res;
-
-        $result_uri = ( $res == 1 ) ? 'success' : 'failure';
-
-        $cko_session_id = $this->input->get( 'cko-session-id', TRUE );
-        if ( ! empty( $cko_session_id ) )
-        {
-            $result_uri .= '?cko-session-id=' . $cko_session_id;
-        }
-
-        $this->vars[ 'result_page' ] = site_url( $result_uri );
-
-        $this->load->view( 'three_ds_result', $this->vars );
-    }
 }

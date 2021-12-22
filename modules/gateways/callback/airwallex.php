@@ -34,18 +34,43 @@ if (!$gatewayParams['type']) {
     die("Module Not Activated");
 }
 
-// echo "<pre>";
-// var_dump($gatewayParams);
-// var_dump($_REQUEST);
-// exit();
+/**
+ * Send POST CURL request.
+ *
+ * @access  private
+ *
+ * @param   string $url
+ * @param   string $param
+ *
+ * @return  void
+ */
+function awx_send_post2( $url = '', $param = '' )
+{
+    if ( empty( $url ) OR empty( $param ) )
+    {
+        return FALSE;
+    }
+
+    $ch = curl_init();
+    curl_setopt( $ch, CURLOPT_URL, $url );
+    curl_setopt( $ch, CURLOPT_HEADER, 0 );
+    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, 1 );
+    curl_setopt( $ch, CURLOPT_POST, 1 );
+    curl_setopt( $ch, CURLOPT_POSTFIELDS, $param );
+
+    $data = curl_exec( $ch );
+    curl_close( $ch );
+    return $data;
+}
 
 
-$apiUsername = $gatewayParams['apiUsername'];
-$apiPassword = $gatewayParams['apiPassword'];
-$testMode = $gatewayParams['testMode'];
+$clientId    = $gatewayParams['accountID'];
+$apiKey    = $gatewayParams['secretKey'];
+$testMode       = $gatewayParams['testMode'];
+$system_url       = $gatewayParams['systemurl'];
+
 
 // Retrieve data returned in redirect
-$success = isset($_REQUEST['success']) ? $_REQUEST['success'] : '';
 $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
 $invoiceId = isset($_REQUEST['invoice_id']) ? $_REQUEST['invoice_id'] : '';
 $customerId = isset($_REQUEST['customer_id']) ? $_REQUEST['customer_id'] : '';
@@ -53,29 +78,32 @@ $amount = isset($_REQUEST['amount']) ? $_REQUEST['amount'] : '';
 $fees = isset($_REQUEST['fees']) ? $_REQUEST['fees'] : '';
 $currencyCode = isset($_REQUEST['currency']) ? $_REQUEST['currency'] : '';
 $transactionId = isset($_REQUEST['transaction_id']) ? $_REQUEST['transaction_id'] : '';
-$cardLastFour = isset($_REQUEST['card_last_four']) ? $_REQUEST['card_last_four'] : '';
-$cardType = isset($_REQUEST['card_type']) ? $_REQUEST['card_type'] : '';
-$cardExpiryDate = isset($_REQUEST['card_expiry_date']) ? $_REQUEST['card_expiry_date'] : '';
 $cardToken = isset($_REQUEST['card_token']) ? $_REQUEST['card_token'] : '';
-$verificationHash = isset($_REQUEST['verification_hash']) ? $_REQUEST['verification_hash'] : '';
+
+
+// Get card info
+$paymentMethodId = isset($_REQUEST['paymentmethod_id']) ? $_REQUEST['paymentmethod_id'] : '';
+
+$res = awx_send_post2( $system_url . 'modules/gateways/airwallex/public/index.php?c=Awx_Embedded_Fields_Controller&m=get_paymentmethod', [ 
+    'client_id'         => $clientId,
+    'api_key'           => $apiKey,
+    'test_mode'         => $testMode,
+    'paymentmethod_id'  => $paymentMethodId,
+] );
+
+$response = json_decode( $res, TRUE );
+
+$success = isset($response['payment_method']) ? $response['payment_method'] : '';
+
+if ( ! empty( $success ) )
+{
+    $cardLastFour   = $response[ 'payment_method' ][ 'card' ][ 'last4' ];
+    $cardType       = $response[ 'payment_method' ][ 'card' ][ 'brand' ];
+    $cardExpiryDate = $response[ 'payment_method' ][ 'card' ][ 'expiry_month' ] . substr( $response[ 'payment_method' ][ 'card' ][ 'expiry_year' ], -2 );
+}
+
 $payMethodId = isset($_REQUEST['custom_reference']) ? (int) $_REQUEST['custom_reference'] : 0;
 
-// Validate Verification Hash. Uncomment for production use.
-// $comparisonHash = sha1(
-//     implode('|', [
-//         $apiUsername,
-//         $customerId,
-//         $invoiceId,
-//         $amount,
-//         $currencyCode,
-//         $apiPassword,
-//         $token,
-//     ])
-// );
-// if ($verificationHash !== $comparisonHash) {
-//     logTransaction($gatewayParams['paymentmethod'], $_REQUEST, "Invalid Hash");
-//     die('Invalid hash.');
-// }
 
 if ($action == 'payment') {
     if ($success) {

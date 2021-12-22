@@ -86,54 +86,6 @@
                     <div class="col-xl-8 col-lg-7">
 
         <div class="accordion" id="accordion" role="tablist">
-<?php if ( FALSE ) { ?>
-            <div class="card">
-                <div class="card-header" role="tab">
-                    <h6><a href="#card" data-toggle="collapse" class="" aria-expanded="true">Make Payment</a></h6>
-                </div>
-                <div class="collapse show" id="card" data-parent="#accordion" role="tabpanel" style="">
-
-                <div class="card-body" style="padding-left:0;padding-right:0;padding-top:0">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                          <tbody>
-                            <tr>
-                              <td class="align-middle" width="2%" style="border-top:0;border-bottom: 1px solid #dee2e6;">
-                                <div class="custom-control custom-radio mb-0" style="padding-left:2px">
-                                  <input class="custom-control-input" type="radio" id="local" checked name="shipping-method">
-                                  <label class="custom-control-label" for="local"></label>
-                                </div>
-                              </td>
-                              <td class="align-middle" style="border-top:0;border-bottom: 1px solid #dee2e6;"><img class="d-inline-block align-middle" src="https://checkout-demo.airwallex.com/static/media/visa.745a6485.svg" height="24" alt="Cerdit Cards"> <span class="text-gray-dark">411111******1111</span><br><span class="text-muted text-sm">Saved on: July 12, 2021</span></td>
-                              <td class="align-middle" style="border-top:0;border-bottom: 1px solid #dee2e6;">Forget this card</td>
-                            </tr>
-                            <tr>
-                              <td class="align-middle">
-                                <div class="custom-control custom-radio mb-0">
-                                  <input class="custom-control-input" type="radio" id="flat" name="shipping-method">
-                                  <label class="custom-control-label" for="flat"></label>
-                                </div>
-                              </td>
-                              <td class="align-middle"><img class="d-inline-block align-middle" src="https://checkout-demo.airwallex.com/static/media/mastercard.262f85fc.svg" height="24" alt="Cerdit Cards"> <span class="text-gray-dark">222300******1375</span><br><span class="text-muted text-sm">Saved on: Sep. 02, 2021</span></td>
-                              <td class="align-middle">Forget this card</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-
-                    <div class="form-group col-12 text-center mt-2">
-                        <div class="row">
-                            <div class="col-sm-3"></div>
-                            <div class="col-sm-6">
-                                <button id="pay-button-saved-card" class="btn btn-primary btn-block" type="button" data-action="/modules/gateways/airwallex/public/index.php?c=Awx_Embedded_Fields_Controller&m=embedded_fields"><i class="icon-credit-card"></i> Submit Payment</button>
-                            </div>
-                            <div class="col-sm-3"></div>
-                          </div>
-                    </div>
-                </div>
-              </div>
-            </div>
-<?php } ?>
 
             <div class="card">
               <div class="card-header" role="tab">
@@ -144,8 +96,8 @@
                     <div class="text-center modal-spinner"><div class="spinner-border text-primary m-2" role="status"></div></div>
                     <div class="awx-fields" style="display:none;">
                         <p>We accept following cards:&nbsp;&nbsp;
-                            <img class="d-inline-block align-middle" src="https://checkout-demo.airwallex.com/static/media/visa.745a6485.svg" height="24" alt="Cerdit Cards">
-                            <img class="d-inline-block align-middle" src="https://checkout-demo.airwallex.com/static/media/mastercard.262f85fc.svg" height="24" alt="Cerdit Cards">
+                            <img class="d-inline-block align-middle" src="https://checkout.airwallex.com/static/media/visa.745a6485.svg" height="24" alt="Cerdit Cards">
+                            <img class="d-inline-block align-middle" src="https://checkout.airwallex.com/static/media/mastercard.262f85fc.svg" height="24" alt="Cerdit Cards">
                         </p>
                         <p id="error-payment" class="text-primary mb-3"></p>
                         <div class="row">
@@ -168,13 +120,6 @@
                                 <div id="cvc"></div>
                             </div>
                             
-                            <div class="form-group col-12 mt-4">
-                                <div class="custom-control custom-checkbox">
-                                    <input class="custom-control-input" type="checkbox" checked id="invalidCheck3">
-                                    <label class="custom-control-label" for="invalidCheck3">Reuse your billing address.</label>
-                                </div>
-                            </div>
-
                             <div class="form-group col-12 text-center paddin-top-1x">
                                 <div class="row">
                                     <div class="col-sm-3"></div>
@@ -198,25 +143,18 @@
                         <aside class="sidebar">
                             <!-- Order Summary Widget-->
                             <section class="widget widget-order-summary widget-featured-products">
-                                <h3 class="widget-title">Invoice #1</h3>
+                                <h3 class="widget-title"><?= $params[ 'description' ] ?></h3>
                                 <div class="entry">
                                     <div class="entry-content">
-                                        <h4 class="entry-title">Group 1 Product Name 1</h4>
-                                        <span class="entry-meta"> (02/12/2021 - 01/01/2022)</span>
-                                        <span class="entry-meta text-gray-dark text-right">$1.00 x 1</span>
+                                        <h4 class="entry-title"><?= $params[ 'product_name' ] ?></h4>
+                                        <span class="entry-meta"></span>
+                                        <span class="entry-meta text-gray-dark text-right"><?= $params[ 'currency' ] . ' ' . $params[ 'amount' ] ?> x 1</span>
                                     </div>
                                 </div>
-                                <hr class="mb-3">
                                 <table class="table">
                                     <tr>
-                                        <td>Subtotal</td>
-                                        <td class="text-gray-dark">$1.00</td></tr>
-                                    <tr>
-                                        <td>Credit</td>
-                                        <td class="text-gray-dark">$0.00</td></tr>
-                                    <tr>
                                         <td class="text-lg">Total</td>
-                                        <td class="text-lg text-gray-dark">$1.00</td>
+                                        <td class="text-lg text-gray-dark"><?= $params[ 'currency' ] . ' ' . $params[ 'amount' ] ?></td>
                                     </tr>
                                 </table>
                             </section>
@@ -234,7 +172,6 @@
                     </div>
                     <div class="modal-body">
                         <p class="mt-3">Your payment failed, but you can <b> try again with another card</b>.</p>
-                        <p>Please ensure that the billing address you provided is the same one where your debit/credit card is registered.</p>
                         <div class="padding-top-1x text-center">
                         <button class="btn btn-primary" type="button" data-dismiss="modal"><i class="icon-credit-card"></i> Try Again</a>
                         </div>
@@ -243,7 +180,7 @@
             </div>
         </div>
         <div id="callback" style="display:none;">
-            <form id="callbackform" action="/modules/gateways/callback/airwallex.php" method="post">
+            <form id="callbackform" action="<?= $return_url ?>" method="post">
 <?php foreach ( $params as $k => $v ) { ?>
                 <input type="hidden" name="<?= $k ?>" value="<?= $v ?>">
 <?php } ?>
@@ -266,7 +203,7 @@
                 try {
 
                     Airwallex.init({
-                        env: 'demo',
+                        env: '<?= ( $params[ 'test_mode' ] === 'on' ) ? 'demo' : 'prod' ?>',
                         origin: window.location.origin
                     });
 
@@ -316,8 +253,6 @@
                 });
 
                 $('#pay-button').click(function(){
-                    // TODO
-                    // validateApiKey();
                     submitPaymentForm();
                 });
             });
@@ -327,26 +262,14 @@
                 $( '#pay-button' ).html('<div class="spinner-border spinner-border-sm text-white mr-2" role="status"></div>Processing...').prop('disabled', true);
                 // Pay and save the card
                 Airwallex.createPaymentConsent({
-                    "intent_id": "<?= $intent[ 'id' ] ?>",
-                    "client_secret": "<?= $intent[ 'client_secret' ] ?>",
-                    "element": Airwallex.getElement("cardNumber"),
-                    "customer_id": "<?= $customer_id ?>",
-                    "currency": "USD",
+                    "intent_id": "<?= $intent_id ?>",
+                    "client_secret": "<?= $client_secret ?>",
+                    "element": Airwallex.getElement( "cardNumber" ),
+                    "customer_id": "<?= $customer_awx_id ?>",
+                    "currency": "<?= $params[ 'currency' ] ?>",
                     "next_triggered_by": "merchant",
                     "merchant_trigger_reason": "scheduled",
                     "requires_cvc": false,
-                    "billing": {
-                        "first_name": "Steve",
-                            "last_name": "Gates",
-                            "phone_number": "+187631283",
-                            "address": {
-                            "country_code": "US",
-                                "state": "AK",
-                                "city": "Akhiok",
-                                "street": "Street No. 4",
-                                "postcode": "99654"
-                        }
-                    }
                 }).then((response) => {
 
                     retrieveIntent( response );
@@ -363,8 +286,7 @@
             {
                 console.log( response );
                 // Retrive the payment intent details
-                $('input[name="card_last_four"]').val( response.payment_method.last4 );
-                $('input[name="card_type"]').val( response.payment_method.brand );
+                $('input[name="paymentmethod_id"]').val( response.payment_method.id );
                 $('input[name="card_token"]').val( response.payment_consent_id + '-|-' + response.customer_id );
                 $('input[name="transaction_id"]').val( response.intent_id );
                 $( '#callbackform' ).submit();
@@ -379,38 +301,6 @@
 
                 $('#pay-button').html('<i class="icon-credit-card"></i> Submit Payment').prop('disabled', false);
             }
-
-            function validateApiKey( event )
-            {
-                var isValid     = false;
-                var clientId        = $( '#client-id' );
-                var apiKey       = $( '#api-key' );
-                var clientIdVal     = $( clientId ).val().trim();
-                var apiKeyVal    = $( apiKey ).val().trim();
-                var re = /\S+@\S+\.\S+/;
-
-                if ( clientIdVal.length == 0 )
-                {
-                    $('#error-user').html('The Client Id field is required.');
-                    clientId.focus();
-                }
-                else if ( apiKeyVal.length == 0 )
-                {
-                    $('#error-user').html('The Api Key field is required.');
-                    apiKey.focus();
-                }
-                else
-                {
-                    $('#error-user').html('');
-                    isValid = true;
-                }
-
-                if ( ! isValid )
-                {
-                    event.preventDefault();
-                }
-            }
-            
         </script>
     </body>
 </html>
