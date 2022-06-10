@@ -1,0 +1,11 @@
+{
+	"description": "Samples of Airwallex PA services",
+	"homepage": "https://airwallex.com",
+	"license": "MIT",
+	"support": {
+	},
+	"require": {
+		"php": ">=5.3.7",
+		"guzzlehttp/guzzle": "^7.3",
+	}
+}
