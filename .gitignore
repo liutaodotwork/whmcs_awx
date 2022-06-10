@@ -3,7 +3,7 @@
 accounts.php
 .well-known/
 node_modules/
-dist
+# dist
 webroot/docs/build
 
 # Testing reports
