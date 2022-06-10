@@ -104,7 +104,11 @@ class Awx_Embedded_Fields_Controller extends Awx_Controller
                     ]
                 ],
                 'type' => 'digital_goods'
-            ]
+            ],
+            'referrer_data' => [
+                'type'      => 'whmcs',
+                'version'   => '1.0'
+            ],
         ];
 
         $customer = $this->get_customer( $token, $params[ 'customer_id' ] );
