@@ -15,8 +15,8 @@ tests/.phpunit.result.cache
 tags
 !cart/views/team/tags
 
-vendor
-!webroot/themes/mvp/src/vendor
+# vendor
+# !webroot/themes/mvp/src/vendor
 
 composer.lock
 package-lock.json
